@@ -1,155 +1,179 @@
-* {
-  box-sizing: border-box;
-}
+*, *::before, *::after { box-sizing: border-box; }
 
-html {
-  scroll-behavior: smooth;
-}
-
-body {
+.page {
   margin: 0;
-  font-family: Arial, Helvetica, sans-serif;
-  background: #0d1b3d;
-  color: #1f2937;
+  min-height: 100vh;
+  font-family: Georgia, 'Times New Roman', serif;
+  background: #10233f;
+  color: #f7f4ed;
   line-height: 1.6;
-  overflow-x: hidden;
 }
 
-img {
+.page img {
   max-width: 100%;
   display: block;
 }
 
 .site-header,
-main,
+.site-main,
 .site-footer {
-  width: min(100%, 1100px);
+  width: min(100%, 68rem);
   margin: 0 auto;
 }
 
 .site-header {
-  padding: 48px 20px 20px;
+  padding: 2rem 1.25rem 1.5rem;
+}
+
+.site-nav {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1.5rem;
+  padding: 0 0 1.5rem;
+}
+
+.nav-link {
+  color: #f7f4ed;
+  font-size: 1rem;
+  font-weight: 700;
+  text-decoration-thickness: 0.08rem;
+  text-underline-offset: 0.25rem;
 }
 
 .hero {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 32px;
-  padding: 32px 24px;
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 18px;
-  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+  gap: 2rem;
+  padding: 2.5rem;
+  background: #f7f4ed;
+  color: #17253a;
+  border: 1px solid #c8c6bf;
+  border-radius: 0.5rem;
 }
 
 .avatar {
-  width: 180px;
-  height: 180px;
+  flex: 0 0 11rem;
+  width: 11rem;
+  height: 11rem;
   border-radius: 50%;
   object-fit: cover;
-  border: 4px solid #dbeafe;
+  border: 0.25rem solid #d4a44c;
 }
 
 .hero-copy {
-  max-width: 560px;
+  max-width: 38rem;
 }
 
-h1 {
-  margin: 0 0 8px;
-  font-size: clamp(2.2rem, 4vw, 3.4rem);
+.hero-title {
+  margin: 0 0 0.5rem;
+  font-size: 3rem;
   line-height: 1.1;
 }
 
 .subtitle {
-  margin: 0 0 12px;
-  font-size: 1.2rem;
+  margin: 0 0 0.75rem;
+  font-size: 1.25rem;
   font-weight: 700;
-  color: #2563eb;
+  color: #315b57;
 }
 
 .bio {
-  margin: 0 0 22px;
-  font-size: 1.05rem;
-  color: #374151;
+  margin: 0 0 1.5rem;
+  font-size: 1.0625rem;
+  overflow-wrap: anywhere;
 }
 
 .button {
   display: inline-block;
-  padding: 12px 22px;
-  background: #2563eb;
+  padding: 0.75rem 1.375rem;
+  background: #315b57;
   color: #ffffff;
   text-decoration: none;
-  border-radius: 999px;
+  border-radius: 0.25rem;
   font-weight: 700;
 }
 
 .button:hover,
-.button:focus {
-  background: #1d4ed8;
+.button:focus-visible {
+  background: #244541;
+  outline: 0.125rem solid #d4a44c;
+  outline-offset: 0.1875rem;
 }
 
-main {
-  padding: 0 20px 40px;
+.site-main {
+  padding: 0 1.25rem 2.5rem;
 }
 
 .projects {
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 18px;
-  padding: 28px 24px;
+  padding: 1.75rem 0;
+  border-top: 1px solid #79908b;
 }
 
-.projects h2 {
+.section-title {
   margin-top: 0;
-  margin-bottom: 16px;
-  font-size: 1.8rem;
+  margin-bottom: 1rem;
+  font-size: 1.75rem;
 }
 
-.projects ul {
+.project-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.card {
+  flex: 1 1 20rem;
+  min-width: 0;
+  padding: 1.5rem;
+  background: #f7f4ed;
+  color: #17253a;
+  border: 1px solid #c8c6bf;
+  border-radius: 0.5rem;
+}
+
+.card p {
   margin: 0;
-  padding-left: 20px;
+  font-size: 1.0625rem;
+  overflow-wrap: anywhere;
 }
 
-.projects li {
-  font-size: 1.05rem;
+.card-title {
+  margin: 0 0 0.5rem;
+  font-size: 1.25rem;
 }
 
 .site-footer {
-  padding: 0 20px 40px;
-  text-align: center;
+  padding: 0 1.25rem 2.5rem;
 }
 
-.site-footer a {
+.social {
+  padding-top: 1rem;
+  border-top: 1px solid #79908b;
+}
+
+.footer-title {
+  margin: 0 0 0.5rem;
+  font-size: 1.25rem;
+}
+
+.social-link {
   color: #ffffff;
   text-decoration: none;
   font-weight: 700;
 }
 
-@media (max-width: 768px) {
-  .site-header,
-  main,
-  .site-footer {
-    width: 100%;
-  }
-
+@media (max-width: 48rem) {
+  .site-header { padding-top: 1rem; }
+  .site-nav { justify-content: center; }
   .hero {
     flex-direction: column;
+    gap: 1.25rem;
+    padding: 1.75rem 1.25rem;
     text-align: center;
-    gap: 18px;
-    padding: 28px 20px;
   }
-
-  .avatar {
-    width: 150px;
-    height: 150px;
-  }
-
-  .hero-copy {
-    max-width: 100%;
-  }
-
-  .projects {
-    padding: 22px 18px;
-  }
+  .avatar { flex-basis: 9rem; width: 9rem; height: 9rem; }
+  .hero-copy { max-width: 100%; }
+  .hero-title { font-size: 2.25rem; }
+  .project-list { flex-direction: column; }
+  .site-main { padding-bottom: 1.5rem; }
 }
