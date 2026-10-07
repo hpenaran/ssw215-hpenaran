@@ -64,6 +64,13 @@
   max-width: 38rem;
 }
 
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
 .hero-title {
   margin: 0 0 0.5rem;
   font-size: 3rem;
@@ -84,20 +91,34 @@
 }
 
 .button {
-  display: inline-block;
   padding: 0.75rem 1.375rem;
   background: #315b57;
   color: #ffffff;
-  text-decoration: none;
+  border: 0;
   border-radius: 0.25rem;
+  font: inherit;
   font-weight: 700;
+  cursor: pointer;
 }
 
-.button:hover,
-.button:focus-visible {
+.button:not(:disabled):hover {
   background: #244541;
+}
+
+.button:not(:disabled):focus-visible {
   outline: 0.125rem solid #d4a44c;
   outline-offset: 0.1875rem;
+}
+
+.button:not(:disabled):active {
+  background: #17253a;
+  transform: translateY(0.125rem);
+}
+
+.button:disabled {
+  background: #d8d6cf;
+  color: #62676d;
+  cursor: not-allowed;
 }
 
 .site-main {
@@ -125,14 +146,14 @@
   flex: 1 1 20rem;
   min-width: 0;
   padding: 1.5rem;
-  /* hand-edited by HP */
-  .featured {
-    padding: 2rem;
-  }
   background: #f7f4ed;
   color: #17253a;
   border: 1px solid #c8c6bf;
   border-radius: 0.5rem;
+}
+
+.featured {
+  padding: 2rem;
 }
 
 .card p {
@@ -178,6 +199,7 @@
   .avatar { flex-basis: 9rem; width: 9rem; height: 9rem; }
   .hero-copy { max-width: 100%; }
   .hero-title { font-size: 2.25rem; }
+  .hero-actions { justify-content: center; }
   .project-list { flex-direction: column; }
   .site-main { padding-bottom: 1.5rem; }
 }
