@@ -125,6 +125,10 @@
   flex: 1 1 20rem;
   min-width: 0;
   padding: 1.5rem;
+  /* hand-edited by HP */
+  .featured {
+    padding: 2rem;
+  }
   background: #f7f4ed;
   color: #17253a;
   border: 1px solid #c8c6bf;
