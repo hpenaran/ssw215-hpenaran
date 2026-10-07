@@ -26,6 +26,12 @@ this bio: "I am dedicated to learning and becoming an expert in my field. I love
 - <nav> MUST contain a link to the projects section and a link to my GitHub profile.
 - Each project MUST be an <article class="card"> inside a container that uses display:
 flex, flex-wrap: wrap and gap.
+- The "See my projects" button MUST have four visually distinct states: :hover, :focus-
+visible, :active, and :disabled.
+- A second button labelled "Contact me (coming soon)" MUST be present with the HTML
+disabled attribute, and MUST NOT look clickable.
+- All four state rules MUST live in style.css.
+
 ## 4. Acceptance Checklist
 - [x] Exactly one <h1>, one <header>, one <nav>, one <main>, one <footer>.
 - [x] Every project is an <article class="card"> inside a flex container with gap.
@@ -33,5 +39,10 @@ flex, flex-wrap: wrap and gap.
 - [x] No inline style="..." attributes anywhere in index.html.
 - [ x] No ID selectors (#something) in style.css.
 - [ x] No horizontal scrollbar when the browser is narrowed to 375px.
+- [ ] Hovering the primary button visibly changes it.
+- [ ] Tabbing to the primary button shows a clear focus ring.
+- [ ] Holding the mouse down on it looks different again.
+- [ ] The disabled button looks unavailable and does not react to hover.
+
 ## 5. Audit Protocol
 - Inspect the generated code line by line with `git diff --staged` before committing.
