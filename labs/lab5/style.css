@@ -195,7 +195,7 @@ img {
   border-radius: 0.5rem;
 }
 
-.hidden {
+.is-hidden {
   display: none;
 }
 

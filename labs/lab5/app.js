@@ -10,7 +10,7 @@ function updateProjectList() {
     const text = card.textContent.toLowerCase();
     const matches = text.includes(query);
 
-    card.classList.toggle('hidden', !matches);
+    card.classList.toggle('is-hidden', !matches);
 
     if (matches) {
       visibleCount += 1;
