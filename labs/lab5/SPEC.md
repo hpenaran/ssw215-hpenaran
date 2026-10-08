@@ -12,6 +12,11 @@ engineering student.
 border-box; }`.
 - Spacing and font sizes MUST use rem. px MAY be used only for borders.
 - Styling MUST use class selectors. ID selectors MUST NOT be used for styling.
+- All JavaScript MUST live in ./app.js. index.html MUST NOT contain inline onclick
+attributes or any <script> block with code inside it.
+- app.js MUST be loaded from <head> with <script src="./app.js" defer></script>.
+- Showing and hiding MUST be done by adding and removing a CSS class. app.js MUST NOT set
+styles directly through .style.
 ## 3. UI Content & Interface Contract
 - Hero header: my full name "Henry Penaranda", the subtitle "2/4 Software Engineer", and
 this bio: "I am dedicated to learning and becoming an expert in my field. I love turning big ideas into reality".
@@ -31,18 +36,22 @@ visible, :active, and :disabled.
 - A second button labelled "Contact me (coming soon)" MUST be present with the HTML
 disabled attribute, and MUST NOT look clickable.
 - All four state rules MUST live in style.css.
+- Above the projects there MUST be a text input with id="filter-input", and a <label>
+bound to it reading "Filter projects".
+- There MUST be an element with id="project-count" that reads "Showing X of Y projects".
+- As the user types, cards whose text does not contain what was typed MUST be hidden by
+adding the class "hidden", and the count MUST update immediately — no button, no page
+reload.
+- Emptying the box MUST bring every card back.
+- style.css MUST define .hidden { display: none; }.
 
 ## 4. Acceptance Checklist
-- [x] Exactly one <h1>, one <header>, one <nav>, one <main>, one <footer>.
-- [x] Every project is an <article class="card"> inside a flex container with gap.
-- [x] style.css begins with the box-sizing reset.
-- [x] No inline style="..." attributes anywhere in index.html.
-- [ x] No ID selectors (#something) in style.css.
-- [ x] No horizontal scrollbar when the browser is narrowed to 375px.
-- [ ] Hovering the primary button visibly changes it.
-- [ ] Tabbing to the primary button shows a clear focus ring.
-- [ ] Holding the mouse down on it looks different again.
-- [ ] The disabled button looks unavailable and does not react to hover.
-
+- [ ] app.js is loaded from <head> with defer, and index.html has no inline onclick and
+no code inside a <script> tag.
+- [ ] Typing in the filter box hides and shows cards live, without pressing anything.
+- [ ] The "Showing X of Y projects" line updates as I type.
+- [ ] Emptying the box brings every card back.
+- [ ] app.js contains no .style assignments — hiding is done with the "hidden" class.
+- [ ] The DevTools Console shows no red errors when the page loads.
 ## 5. Audit Protocol
 - Inspect the generated code line by line with `git diff --staged` before committing.
