@@ -4,8 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Henry Penaranda</title>
-    <link rel="stylesheet" href="./style.css" />
-    <script src="./app.js" defer></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+    <script src="{{ url_for('static', filename='app.js') }}" defer></script>
   </head>
   <body class="page">
     <header class="site-header">
@@ -15,7 +15,7 @@
       </nav>
 
       <section class="hero" aria-labelledby="hero-title">
-        <img class="avatar" src="./assets/avatar.jpg" alt="Henry Penaranda" />
+        <img class="avatar" src="{{ url_for('static', filename='assets/avatar.jpg') }}" alt="Henry Penaranda" />
         <div class="hero-copy">
           <h1 class="hero-title" id="hero-title">Henry Penaranda</h1>
           <p class="subtitle">2/4 Software Engineer</p>
@@ -37,23 +37,15 @@
           <input id="filter-input" class="filter-input" type="text" aria-label="Filter projects" />
         </div>
 
-        <p id="project-count" class="project-count" aria-live="polite">Showing 3 of 3 projects</p>
+        <p id="project-count" class="project-count" aria-live="polite">Showing {{ projects|length }} of {{ projects|length }} projects</p>
 
         <div class="project-list">
-          <article class="card">
-            <h3 class="card-title">Personal Portfolio</h3>
-            <p>I would like to make a professional website for myself for people to look at if they are curious about who I am.</p>
+          {% for project in projects %}
+          <article class="card" data-project-id="{{ project.id }}">
+            <h3 class="card-title">{{ project.title }}</h3>
+            <p>{{ project.description }}</p>
           </article>
-
-          <article class="card">
-            <h3 class="card-title">Web App Dashboard</h3>
-            <p>I want to build a polished dashboard that helps users track habits, goals, and daily progress.</p>
-          </article>
-
-          <article class="card">
-            <h3 class="card-title">Team Collaboration Tool</h3>
-            <p>I am designing a collaboration space where teams can share updates and manage ideas clearly.</p>
-          </article>
+          {% endfor %}
         </div>
       </section>
     </main>
