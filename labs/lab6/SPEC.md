@@ -70,6 +70,7 @@ filter in app.js keeps working with no changes to app.js.
 element with class "like-count" showing that project's likes.
 - Clicking Upvote MUST send a POST to /api/projects/<id>/upvote and update only the
 number on that card, with no page reload.
+- A project with more than 10 likes MUST show a "Trending" badge on its card.
 
 ## 4. Acceptance Checklist
 - [x ] Running app.py starts a server, and the page loads at http://127.0.0.1:5000/.
