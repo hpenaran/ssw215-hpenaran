@@ -30,6 +30,16 @@ projects_db = [
         ),
         "likes": 0,
     },
+    # hand-edited by HP
+    {
+        "id": 4,
+        "title": "AI-Powered Chatbot",
+        "description": (
+            "I am creating a chatbot that uses AI to answer questions and provide "
+            "assistance to users in real-time."
+        ),
+        "likes": 0,
+    }
 ]
 
 
