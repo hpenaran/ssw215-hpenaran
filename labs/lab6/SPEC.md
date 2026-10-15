@@ -17,6 +17,15 @@ attributes or any <script> block with code inside it.
 - app.js MUST be loaded from <head> with <script src="./app.js" defer></script>.
 - Showing and hiding MUST be done by adding and removing a CSS class. app.js MUST NOT set
 styles directly through .style.
+- All project data MUST live in a Python list of dictionaries named projects_db in
+app.py. templates/index.html MUST NOT contain a hardcoded project card.
+- templates/index.html MUST render one card per project with a {% for %} loop.
+- style.css and app.js MUST be linked with url_for('static', filename=...), never with a
+plain relative path.
+- No Jinja syntax ({{ }} or {% %}) may appear in static/app.js. External script files are
+never processed by Flask.
+- app.py MUST create the application with app = Flask(__name__), and MUST end with a
+block that runs it with debug=True when the file is executed directly.
 ## 3. UI Content & Interface Contract
 - Hero header: my full name "Henry Penaranda", the subtitle "2/4 Software Engineer", and
 this bio: "I am dedicated to learning and becoming an expert in my field. I love turning big ideas into reality".
@@ -46,16 +55,23 @@ reload.
 - style.css MUST define .hidden { display: none; }.
 - Each time the filter runs, app.js MUST print the titles of the projects that are still
 visible to the console with console.log.
+- Each project in projects_db MUST have the keys: id (an integer), title, description,
+and likes (an integer).
+- Each rendered card MUST carry the attribute data-project-id holding that project's id.
+- Visiting http://127.0.0.1:5000/ MUST serve the page, with one card per entry in
+projects_db.
+- The rendered cards MUST keep the same classes they had in Lab 5, so that the existing
+filter in app.js keeps working with no changes to app.js.
 
 ## 4. Acceptance Checklist
-- [ x] app.js is loaded from <head> with defer, and index.html has no inline onclick and
-no code inside a <script> tag.
-- [ x] Typing in the filter box hides and shows cards live, without pressing anything.
-- [ x] The "Showing X of Y projects" line updates as I type.
-- [ x] Emptying the box brings every card back.
-- [ x] app.js contains no .style assignments — hiding is done with the "hidden" class.
-- [ x] The DevTools Console shows no red errors when the page loads.
-- [ ] Typing in the filter prints the matching project titles in the Console, and the
-list gets shorter as I type.
+- [ ] Running app.py starts a server, and the page loads at http://127.0.0.1:5000/.
+- [ ] Every card on the page comes from the {% for %} loop — index.html contains no
+hardcoded card.
+- [ ] Each card carries data-project-id with that project's id.
+- [ ] Changing a title in app.py and reloading the page changes what I see.
+- [ ] The filter box still hides and shows cards, and I did not edit app.js to make that
+work.
+- [ ] The page is styled — style.css and app.js both loaded.
+- [ ] The DevTools Console shows no red errors.
 ## 5. Audit Protocol
 - Inspect the generated code line by line with `git diff --staged` before committing.
