@@ -38,6 +38,12 @@ relative path.
 before it returns a response.
 - projects.json MUST be written with json.dump(..., indent=2) so it stays readable in a
 diff.
+- The create-project route MUST accept POST only, at the path /api/projects.
+- The route MUST append the new project to projects.json before it returns.
+- The new project's id MUST be one higher than the largest id already in the file.
+- A create request whose title is missing, or is empty once surrounding spaces are
+removed, MUST be rejected by the server with status code 400, and the rejection MUST
+happen before projects.json is opened.
 ## 3. UI Content & Interface Contract
 - Hero header: my full name "Henry Penaranda", the subtitle "2/4 Software Engineer", and
 this bio: "I am dedicated to learning and becoming an expert in my field. I love turning big ideas into reality".
@@ -82,16 +88,30 @@ number on that card, with no page reload.
 - app.py MUST read projects.json and pass the resulting list to the template, so the page
 shows whatever the file currently contains.
 - After a successful upvote, the new like count MUST be present in projects.json on disk.
+- Above the project list there MUST be a text input with id="new-title" and a button
+reading "Add project".
+- The input and the button MUST sit in their own block, outside the element that lays the
+project cards out, so the existing card layout is unchanged.
+- Clicking Add project MUST POST {"title": ...} to /api/projects, and the new card MUST
+appear without a page reload.
+- A successful create MUST return the new project as JSON with status code 201.
 
 ## 4. Acceptance Checklist
-- [ ] The page still loads at http://127.0.0.1:5000/ and shows every project in
+- [ x] The page still loads at http://127.0.0.1:5000/ and shows every project in
 projects.json.
-- [ ] app.py contains no hardcoded project list.
-- [ ] Upvoting a project changes the number inside projects.json.
-- [ ] Stopping the server with Ctrl+C, restarting it, and reloading the page keeps the
+- [ x] app.py contains no hardcoded project list.
+- [ x] Upvoting a project changes the number inside projects.json.
+- [ x] Stopping the server with Ctrl+C, restarting it, and reloading the page keeps the
 new count.
-- [ ] Editing a title directly in projects.json and reloading the page changes what I
+- [ x] Editing a title directly in projects.json and reloading the page changes what I
 see.
-- [ ] The DevTools Console shows no red errors.
+- [ x] The DevTools Console shows no red errors.
+- [ ] Typing a title and clicking Add project adds a card without reloading the page.
+- [ ] The project cards still lay out the way they did in Lab 6.
+- [ ] The new project is in projects.json, and it is still there after a restart.
+- [ ] The Network tab shows the create request returning 201.
+- [ ] Submitting an empty title leaves projects.json unchanged, and the server answers
+400.
+
 ## 5. Audit Protocol
 - Inspect the generated code line by line with `git diff --staged` before committing.
