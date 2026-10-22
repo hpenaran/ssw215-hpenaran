@@ -22,5 +22,17 @@
     "title": "AI-Powered Chatbot",
     "description": "I am creating a chatbot that uses AI to answer questions and provide assistance to users in real-time.",
     "likes": 7
+  },
+  {
+    "id": 5,
+    "title": "AI Automatic Formatting",
+    "description": "",
+    "likes": 3
+  },
+  {
+    "id": 6,
+    "title": "Test",
+    "description": "",
+    "likes": 0
   }
 ]

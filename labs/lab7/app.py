@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 
-from flask import Flask, jsonify, render_template
+from flask import Flask, jsonify, render_template, request
 
 app = Flask(__name__)
 
@@ -17,6 +17,29 @@ def load_projects():
 def index():
     projects_db = load_projects()
     return render_template("index.html", projects=projects_db)
+
+
+@app.post("/api/projects")
+def create_project():
+    data = request.get_json()
+    title = data.get("title") if isinstance(data, dict) else None
+    if not isinstance(title, str) or not title.strip():
+        return jsonify({"error": "A non-empty title is required"}), 400
+
+    title = title.strip()
+    projects_db = load_projects()
+    project = {
+        "id": max((item["id"] for item in projects_db), default=0) + 1,
+        "title": title,
+        "description": "",
+        "likes": 0,
+    }
+    projects_db.append(project)
+
+    with PROJECTS_FILE.open("w", encoding="utf-8") as projects_file:
+        json.dump(projects_db, projects_file, indent=2)
+
+    return jsonify(project), 201
 
 
 @app.post("/api/projects/<int:project_id>/upvote")
