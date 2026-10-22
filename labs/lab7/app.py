@@ -9,7 +9,7 @@ PROJECTS_FILE = Path(__file__).resolve().parent / "projects.json"
 
 
 def load_projects():
-    with PROJECTS_FILE.open(encoding="utf-8") as projects_file:
+    with PROJECTS_FILE.open("r", encoding="utf-8") as projects_file:
         return json.load(projects_file)
 
 
