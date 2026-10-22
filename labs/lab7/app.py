@@ -1,0 +1,65 @@
+from flask import Flask, jsonify, render_template
+
+app = Flask(__name__)
+
+projects_db = [
+    {
+        "id": 1,
+        "title": "Personal Portfolio",
+        "description": (
+            "I would like to make a professional website for myself for people "
+            "to look at if they are curious about who I am."
+        ),
+        "likes": 0,
+    },
+    {
+        "id": 2,
+        "title": "Web App Dashboard",
+        "description": (
+            "I want to build a polished dashboard that helps users track habits, "
+            "goals, and daily progress."
+        ),
+        "likes": 0,
+    },
+    {
+        "id": 3,
+        "title": "Fast Team Communication Tool",
+        "description": (
+            "I am designing a collaboration space where teams can share updates "
+            "and manage ideas clearly."
+        ),
+        "likes": 0,
+    },
+    # hand-edited by HP
+    {
+        "id": 4,
+        "title": "AI-Powered Chatbot",
+        "description": (
+            "I am creating a chatbot that uses AI to answer questions and provide "
+            "assistance to users in real-time."
+        ),
+        "likes": 0,
+    }
+]
+
+
+@app.route("/")
+def index():
+    return render_template("index.html", projects=projects_db)
+
+
+@app.post("/api/projects/<int:project_id>/upvote")
+def upvote_project(project_id):
+    project = next(
+        (project for project in projects_db if project["id"] == project_id),
+        None,
+    )
+    if project is None:
+        return jsonify({"error": "Project not found"}), 404
+
+    project["likes"] += 1
+    return jsonify({"project_id": project_id, "likes": project["likes"]})
+
+
+if __name__ == "__main__":
+    app.run(debug=True)

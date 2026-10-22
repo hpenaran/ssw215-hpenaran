@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Henry Penaranda</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+    <script src="{{ url_for('static', filename='app.js') }}" defer></script>
+  </head>
+  <body class="page">
+    <header class="site-header">
+      <nav class="site-nav" aria-label="Main navigation">
+        <a class="nav-link" href="#projects">Projects</a>
+        <a class="nav-link" href="https://github.com/hpenaran" target="_blank" rel="noopener noreferrer">GitHub</a>
+      </nav>
+
+      <section class="hero" aria-labelledby="hero-title">
+        <img class="avatar" src="{{ url_for('static', filename='assets/avatar.jpg') }}" alt="Henry Penaranda" />
+        <div class="hero-copy">
+          <h1 class="hero-title" id="hero-title">Henry Penaranda</h1>
+          <p class="subtitle">2/4 Software Engineer</p>
+          <p class="bio">I am dedicated to learning and becoming an expert in my field. I love turning big ideas into reality</p>
+          <div class="hero-actions">
+            <a class="button" href="#projects">See my projects</a>
+            <button class="button" type="button" disabled>Contact me (coming soon)</button>
+          </div>
+        </div>
+      </section>
+    </header>
+
+    <main class="site-main">
+      <section id="projects" class="projects" aria-labelledby="projects-title">
+        <h2 class="section-title" id="projects-title">Projects</h2>
+
+        <div class="filter-row">
+          <label class="filter-label" for="filter-input">Filter projects</label>
+          <input id="filter-input" class="filter-input" type="text" aria-label="Filter projects" />
+        </div>
+
+        <p id="project-count" class="project-count" aria-live="polite">Showing {{ projects|length }} of {{ projects|length }} projects</p>
+
+        <div class="project-list">
+          {% for project in projects %}
+          <article class="card" data-project-id="{{ project.id }}">
+            <h3 class="card-title">{{ project.title }}</h3>
+            <p>{{ project.description }}</p>
+            <!-- hand-edited by HP -->
+            {% if project.likes > 10 %}
+              <span class="badge">Trending</span>
+            {% endif %}
+            <p>Likes: <span class="like-count">{{ project.likes }}</span></p>
+            <button class="upvote-btn" type="button">Upvote</button>
+          </article>
+          {% endfor %}
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <section class="social" aria-labelledby="social-title">
+        <h2 class="footer-title" id="social-title">Connect</h2>
+        <a class="social-link" href="https://github.com/hpenaran" target="_blank" rel="noopener noreferrer">GitHub</a>
+      </section>
+    </footer>
+  </body>
+</html>
