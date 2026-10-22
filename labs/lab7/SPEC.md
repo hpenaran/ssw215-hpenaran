@@ -30,6 +30,14 @@ block that runs it with debug=True when the file is executed directly.
 <int:project_id>.
 - The upvote route MUST return jsonify(...), never render_template.
 - app.js MUST check response.ok before reading the response body.
+- projects.json MUST be the only source of project data. app.py MUST NOT contain a
+hardcoded list of projects.
+- The path to projects.json MUST be built from the location of app.py, not from a bare
+relative path.
+- Every route that changes a project MUST write the whole list back to projects.json
+before it returns a response.
+- projects.json MUST be written with json.dump(..., indent=2) so it stays readable in a
+diff.
 ## 3. UI Content & Interface Contract
 - Hero header: my full name "Henry Penaranda", the subtitle "2/4 Software Engineer", and
 this bio: "I am dedicated to learning and becoming an expert in my field. I love turning big ideas into reality".
@@ -71,21 +79,19 @@ element with class "like-count" showing that project's likes.
 - Clicking Upvote MUST send a POST to /api/projects/<id>/upvote and update only the
 number on that card, with no page reload.
 - A project with more than 10 likes MUST show a "Trending" badge on its card.
+- app.py MUST read projects.json and pass the resulting list to the template, so the page
+shows whatever the file currently contains.
+- After a successful upvote, the new like count MUST be present in projects.json on disk.
 
 ## 4. Acceptance Checklist
-- [x ] Running app.py starts a server, and the page loads at http://127.0.0.1:5000/.
-- [ x] Every card on the page comes from the {% for %} loop — index.html contains no
-hardcoded card.
-- [ x] Each card carries data-project-id with that project's id.
-- [ x] Changing a title in app.py and reloading the page changes what I see.
-- [x ] The filter box still hides and shows cards, and I did not edit app.js to make that
-work.
-- [x ] The page is styled — style.css and app.js both loaded.
-- [x ] The DevTools Console shows no red errors.
-- [ ] Clicking Upvote raises the number on that card, and only that card, with no page
-reload.
-- [ ] The Network tab shows the request returning JSON, not HTML.
-- [ ] A project with more than 10 likes shows a Trending badge after the page is
-reloaded.
+- [ ] The page still loads at http://127.0.0.1:5000/ and shows every project in
+projects.json.
+- [ ] app.py contains no hardcoded project list.
+- [ ] Upvoting a project changes the number inside projects.json.
+- [ ] Stopping the server with Ctrl+C, restarting it, and reloading the page keeps the
+new count.
+- [ ] Editing a title directly in projects.json and reloading the page changes what I
+see.
+- [ ] The DevTools Console shows no red errors.
 ## 5. Audit Protocol
 - Inspect the generated code line by line with `git diff --staged` before committing.

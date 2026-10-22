@@ -1,8 +1,27 @@
+[
 {
     "id": 1,
     "title": "Personal Portfolio",
-    "description":
-        "I would like to make a professional website for myself for people "
-        "to look at if they are curious about who I am."
+    "description":"I would like to make a professional website for myself for people to look at if they are curious about who I am.",
+    "likes": 0
+},
+{
+    "id": 2,
+    "title": "Web App Dashboard",
+    "description": "I want to build a polished dashboard that helps users track habits, goals, and daily progress.",
+    "likes":0
+},
+{
+    "id": 3,
+    "title": "Fast Team Communication Tool",
+    "description": "I am designing a collaboration space where teams can share updates and manage ideas clearly.",
+    "likes": 0
+},
+{
+    "id": 4,
+    "title": "AI-Powered Chatbot",
+    "description": "I am creating a chatbot that uses AI to answer questions and provide "
+            "assistance to users in real-time.",
     "likes": 0
 }
+]
