@@ -114,15 +114,15 @@ from each project's to_dict() method.
 writing to the database instead of to a file.
 
 ## 4. Acceptance Checklist
-- [ ] Starting the server creates instance/portfolio.db, and the page shows the projects
+- [x ] Starting the server creates instance/portfolio.db, and the page shows the projects
 that were in projects_seed.json.
-- [ ] Restarting the server does not duplicate any project.
-- [ ] Opening http://127.0.0.1:5000/api/projects in the browser shows the projects as
+- [x ] Restarting the server does not duplicate any project.
+- [x ] Opening http://127.0.0.1:5000/api/projects in the browser shows the projects as
 JSON.
-- [ ] Upvoting changes the count, and the new count is still there after a restart.
-- [ ] Adding a project whose title already exists does not create a second copy, and the
+- [x ] Upvoting changes the count, and the new count is still there after a restart.
+- [x ] Adding a project whose title already exists does not create a second copy, and the
 server does not crash.
-- [ ] instance/ and *.db are ignored by Git and do not appear in git status.
+- [x] instance/ and *.db are ignored by Git and do not appear in git status.
 
 ## 5. Audit Protocol
 - Inspect the generated code line by line with `git diff --staged` before committing.
