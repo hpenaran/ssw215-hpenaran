@@ -9,7 +9,13 @@ app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///portfolio.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-db =SQLAlchemy(app)
+db = SQLAlchemy(app)
+
+
+class Author(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(80), nullable=False)
+    projects = db.relationship("Project", backref="author")
 
 
 class Project(db.Model):
@@ -17,6 +23,7 @@ class Project(db.Model):
     title = db.Column(db.String(120), nullable=False, unique=True)
     description = db.Column(db.Text, nullable=False, default="")
     likes = db.Column(db.Integer, nullable=False, default=0)
+    author_id = db.Column(db.Integer, db.ForeignKey("author.id"), nullable=False)
 
     def to_dict(self):
         return {
@@ -24,6 +31,8 @@ class Project(db.Model):
             "title": self.title,
             "description": self.description,
             "likes": self.likes,
+            "author_id": self.author_id,
+            "author_name": self.author.name,
         }
 
 
@@ -35,15 +44,18 @@ def init_seed_data():
     with seed_file.open("r", encoding="utf-8") as projects_file:
         seed_projects = json.load(projects_file)
 
-    db.session.add_all(
-        Project(
-            id=project["id"],
-            title=project["title"],
-            description=project["description"],
-            likes=project["likes"],
+    author = Author(name="Henry Penaranda")
+    db.session.add(author)
+    for project in seed_projects:
+        db.session.add(
+            Project(
+                id=project["id"],
+                title=project["title"],
+                description=project["description"],
+                likes=project["likes"],
+                author=author,
+            )
         )
-        for project in seed_projects
-    )
     db.session.commit()
 
 
@@ -70,7 +82,11 @@ def create_project():
     if len(title) > 120:
         return jsonify({"error": "The title must be 120 characters or fewer"}), 400
 
-    project = Project(title=title, description="", likes=0)
+    author = Author.query.filter_by(name="Henry Penaranda").first()
+    if author is None:
+        return jsonify({"error": "Project author is not available"}), 500
+
+    project = Project(title=title, description="", likes=0, author=author)
     db.session.add(project)
     try:
         db.session.commit()

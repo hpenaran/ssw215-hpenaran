@@ -43,6 +43,9 @@ function createProjectCard(project) {
   const description = document.createElement('p');
   description.textContent = project.description;
 
+  const author = document.createElement('p');
+  author.textContent = `Author: ${project.author_name}`;
+
   const likes = document.createElement('p');
   likes.append('Likes: ');
 
@@ -56,7 +59,7 @@ function createProjectCard(project) {
   upvoteButton.type = 'button';
   upvoteButton.textContent = 'Upvote';
 
-  card.append(title, description);
+  card.append(title, description, author);
   if (project.likes > 10) {
     const badge = document.createElement('span');
     badge.className = 'badge';
