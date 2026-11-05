@@ -120,6 +120,9 @@ from each project's to_dict() method.
 - Adding a project and upvoting a project MUST both work exactly as they did in Lab 7,
 writing to the database instead of to a file.
 - A project created with the Add project form MUST be attached to the same seeded author.
+<!-- written by HP -->
+- The authors name MUST be visible on the page
+- The authors name MUST be visible in the API
 
 ## 4. Acceptance Checklist
 - [x ] Starting the server creates instance/portfolio.db, and the page shows the projects
@@ -134,6 +137,9 @@ server does not crash.
 - [ ] instance/portfolio.db contains two tables.
 - [ ] Deleting instance/portfolio.db and restarting rebuilds both tables with the seed
 data.
+<!-- written by HP -->
+- [ ] Authors name still visible on the page after reloading
+- [ ] Authors name still readable on the API after reloading
 
 ## 5. Audit Protocol
 - Inspect the generated code line by line with `git diff --staged` before committing.
