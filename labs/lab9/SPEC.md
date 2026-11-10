@@ -156,19 +156,19 @@ JSON.
 - [x ] Adding a project whose title already exists does not create a second copy, and the
 server does not crash.
 - [x] instance/ and *.db are ignored by Git and do not appear in git status.
-- [ ] instance/portfolio.db contains two tables.
-- [ ] Deleting instance/portfolio.db and restarting rebuilds both tables with the seed
+- [ x] instance/portfolio.db contains two tables.
+- [ x] Deleting instance/portfolio.db and restarting rebuilds both tables with the seed
 data.
 <!-- written by HP -->
-- [ ] Authors name still visible on the page after reloading
-- [ ] Authors name still readable on the API after reloading
-- [ ] .env is ignored by Git and never appears in git status.
-- [ ] Pasting a paragraph of notes and pressing Smart create adds a project with a title,
+- [ x] Authors name still visible on the page after reloading
+- [x ] Authors name still readable on the API after reloading
+- [x ] .env is ignored by Git and never appears in git status.
+- [ x] Pasting a paragraph of notes and pressing Smart create adds a project with a title,
 a summary and a technologies list.
-- [ ] /api/projects shows the new project with all three fields filled in.
-- [ ] Notes shorter than 20 characters come back as 400, and nothing is sent to the
+- [x ] /api/projects shows the new project with all three fields filled in.
+- [ x] Notes shorter than 20 characters come back as 400, and nothing is sent to the
 provider.
-- [ ] Deleting instance/portfolio.db and restarting rebuilds the table with the new
+- [x ] Deleting instance/portfolio.db and restarting rebuilds the table with the new
 columns.
 
 ## 5. Audit Protocol
