@@ -1,0 +1,4 @@
+flask
+Flask-SQLAlchemy
+openai==3.49.0
+python-dotenv
