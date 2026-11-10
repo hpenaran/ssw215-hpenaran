@@ -9,4 +9,4 @@ reply = client.chat.completions.create(
     model="gpt-4o-mini",
     messages=[{"role": "user", "content": "Say OK and nothing else."}],
 )
-print(reply.choices[0].message.content)
+print(reply.choices[0].message.content) 
