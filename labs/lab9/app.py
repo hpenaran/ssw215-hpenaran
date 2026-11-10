@@ -5,6 +5,12 @@ from flask import Flask, jsonify, render_template, request
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.exc import SQLAlchemyError
 
+from ai_service import (
+    ProjectExtractionRefused,
+    ProjectExtractionUnavailable,
+    extract_project_details,
+)
+
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///portfolio.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
@@ -22,6 +28,8 @@ class Project(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(120), nullable=False, unique=True)
     description = db.Column(db.Text, nullable=False, default="")
+    summary = db.Column(db.Text, nullable=False, default="")
+    technologies = db.Column(db.Text, nullable=False, default="")
     likes = db.Column(db.Integer, nullable=False, default=0)
     author_id = db.Column(db.Integer, db.ForeignKey("author.id"), nullable=False)
 
@@ -30,6 +38,8 @@ class Project(db.Model):
             "id": self.id,
             "title": self.title,
             "description": self.description,
+            "summary": self.summary,
+            "technologies": self.technologies,
             "likes": self.likes,
             "author_id": self.author_id,
             "author_name": self.author.name,
@@ -87,6 +97,43 @@ def create_project():
         return jsonify({"error": "Project author is not available"}), 500
 
     project = Project(title=title, description="", likes=0, author=author)
+    db.session.add(project)
+    try:
+        db.session.commit()
+    except SQLAlchemyError:
+        db.session.rollback()
+        return jsonify({"error": "Could not create project; the title must be unique"}), 400
+
+    return jsonify(project.to_dict()), 201
+
+
+@app.post("/api/projects/smart")
+def create_smart_project():
+    data = request.get_json(silent=True)
+    notes = data.get("notes") if isinstance(data, dict) else None
+    if not isinstance(notes, str) or len(notes.strip()) < 20:
+        return jsonify({"error": "At least 20 characters of notes are required"}), 400
+
+    try:
+        details = extract_project_details(notes.strip())
+    except ProjectExtractionRefused:
+        return jsonify({"error": "The project notes were refused"}), 422
+    except ProjectExtractionUnavailable:
+        return jsonify({"error": "The AI provider is unavailable"}), 503
+
+    author = Author.query.filter_by(name="Henry Penaranda").first()
+    if author is None:
+        return jsonify({"error": "Project author is not available"}), 500
+
+    summary = details.summary.strip()
+    project = Project(
+        title=details.title.strip(),
+        description=summary,
+        summary=summary,
+        technologies=", ".join(technology.strip() for technology in details.technologies),
+        likes=0,
+        author=author,
+    )
     db.session.add(project)
     try:
         db.session.commit()
