@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Henry Penaranda | Project Tracker</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body class="page">
+    <header class="site-header">
+      <nav class="site-nav" aria-label="Main navigation">
+        <a class="nav-link" href="#projects">Projects</a>
+        <a class="nav-link" href="https://github.com/hpenaran" target="_blank" rel="noopener noreferrer">GitHub</a>
+      </nav>
+
+      <section class="hero" aria-labelledby="hero-title">
+        <img class="avatar" src="./assets/avatar.jpg" alt="Henry Penaranda" />
+        <div class="hero-copy">
+          <h1 class="hero-title" id="hero-title">Henry Penaranda</h1>
+          <p class="subtitle">2/4 Software Engineer</p>
+          <p class="bio">I am dedicated to learning and becoming an expert in my field. I love turning big ideas into reality.</p>
+          <form class="hero-actions" action="#projects" method="get">
+            <button class="button primary-button" type="submit">See My Projects</button>
+            <button class="button secondary-button" type="button" disabled>Contact Me (Coming Soon)</button>
+          </form>
+        </div>
+      </section>
+    </header>
+
+    <main class="site-main">
+      <section class="tracker" aria-labelledby="tracker-title">
+        <div class="section-header">
+          <h2 class="section-title" id="tracker-title">Project Tracker</h2>
+        </div>
+
+        <div class="tracker-layout">
+          <form class="panel project-form" data-project-form aria-label="Create a project">
+            <h3 class="panel-title">Create a Project</h3>
+
+            <label class="field">
+              <span>Project Name</span>
+              <input type="text" name="project-name" placeholder="Example: Study Planner" data-required="true" />
+            </label>
+
+            <label class="field">
+              <span>Description</span>
+              <textarea name="project-description" rows="4" placeholder="Describe the goal, problem, and value of the project." data-required="true"></textarea>
+            </label>
+
+            <label class="field">
+              <span>GitHub Link</span>
+              <input type="url" name="github-link" placeholder="https://github.com/username/project" data-required="true" />
+            </label>
+
+            <label class="field">
+              <span>Current Status</span>
+              <select name="project-status" data-required="true">
+                <option value="Planning">Planning</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Completed">Completed</option>
+                <option value="On Hold">On Hold</option>
+              </select>
+            </label>
+
+            <label class="field">
+              <span>Future Plans</span>
+              <textarea name="future-plans" rows="3" placeholder="What is next for this project?" data-required="true"></textarea>
+            </label>
+
+            <button class="button primary-button" type="submit">Save Project</button>
+          </form>
+
+          <div class="panel update-panel" data-update-panel>
+            <h3 class="panel-title">Project Update Workflow</h3>
+
+            <form class="update-form" data-update-form aria-label="Write a rough project update">
+              <label class="field">
+                <span>Rough Update</span>
+                <textarea name="rough-update" rows="5" placeholder="I finished the dashboard layout and started connecting the data flow." data-required="true"></textarea>
+              </label>
+
+              <div class="button-row">
+                <button class="button primary-button" type="submit">Polish Update</button>
+              </div>
+            </form>
+
+            <div class="review-panel" data-review-panel>
+              <h3 class="panel-title">Review Polished Update</h3>
+              <p class="review-output" data-polished-output>
+                The dashboard layout is complete, and I am now focusing on improving the data flow and testing the user experience.
+              </p>
+
+              <div class="button-row review-actions">
+                <button class="button secondary-button" type="button">Save Polished Update</button>
+                <button class="button secondary-button" type="button">Display Update</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="projects" class="projects" aria-labelledby="projects-title">
+        <h2 class="section-title" id="projects-title">Current Projects</h2>
+
+        <div class="project-list" data-project-list>
+          <article class="card featured" data-project-card>
+            <div class="card-header">
+              <h3 class="card-title">Personal Portfolio</h3>
+              <span class="status-tag status-active">In Progress</span>
+            </div>
+            <p class="card-description">
+              A polished site for my software engineering work, personal projects, and professional growth.
+            </p>
+            <div class="card-meta">
+              <a class="mini-link" href="https://github.com/hpenaran" target="_blank" rel="noopener noreferrer">GitHub</a>
+            </div>
+            <ul class="history-list">
+              <li>Created the welcome section and project overview.</li>
+              <li>Organized project cards for a clean portfolio experience.</li>
+              <li>Next step: refine the AI project tracker workflow.</li>
+            </ul>
+          </article>
+
+          <article class="card" data-project-card>
+            <div class="card-header">
+              <h3 class="card-title">Study Planner</h3>
+              <span class="status-tag status-planning">Planning</span>
+            </div>
+            <p class="card-description">
+              A personal study dashboard designed to track assignments, habits, and learning milestones.
+            </p>
+            <div class="card-meta">
+              <a class="mini-link" href="https://github.com/hpenaran" target="_blank" rel="noopener noreferrer">GitHub</a>
+            </div>
+            <ul class="history-list">
+              <li>Set a clear project roadmap and learning goals.</li>
+              <li>Future plans include weekly progress tracking and reminders.</li>
+            </ul>
+          </article>
+
+          <article class="card" data-project-card>
+            <div class="card-header">
+              <h3 class="card-title">AI Note Helper</h3>
+              <span class="status-tag status-complete">Completed</span>
+            </div>
+            <p class="card-description">
+              A lightweight tool for turning rough notes into concise, organized summaries for personal use.
+            </p>
+            <div class="card-meta">
+              <a class="mini-link" href="https://github.com/hpenaran" target="_blank" rel="noopener noreferrer">GitHub</a>
+            </div>
+            <ul class="history-list">
+              <li>Built a clean note workflow and summary process.</li>
+              <li>Future plans include more automation and smarter filtering.</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <section class="social" aria-labelledby="social-title">
+        <h2 class="footer-title" id="social-title">Connect</h2>
+        <a class="social-link" href="https://github.com/hpenaran" target="_blank" rel="noopener noreferrer">GitHub</a>
+      </section>
+    </footer>
+  </body>
+</html>
