@@ -104,17 +104,33 @@ The welcome section is secondary to the project tracker. The project management 
 
 ### 3.1 Project Structure
 
-The source code must be organized into the following files:
+The source code must be organized into the following files and directories:
 
-- `index.html`: Semantic HTML structure and initial interface state.
-- `style.css`: All styling and responsive layout rules.
-- `app.js`: Vanilla JavaScript, event listeners, validation, and DOM updates.
-- `assets/avatar.jpg`: The relative-path avatar image, if the welcome-page requirements are retained.
-- `SPRINT1.md`: Project recap, workflow demo instructions, and AI usage reflection.
+app.py: Main Flask application, application configuration, and API routes.
 
-The project must open and function locally in modern browsers, including Chrome, Firefox, and Edge.
+templates/index.html: Main HTML page served by Flask.
 
-All styling must reside in `style.css`. Do not use inline `style` attributes, external CSS frameworks, or CSS CDNs. Use class selectors for styling rather than ID selectors.
+static/style.css: All styling and responsive layout rules.
+
+static/app.js: Vanilla JavaScript, event listeners, frontend validation, and API communication.
+
+static/assets/avatar.jpg: Relative-path avatar image, if the welcome-page requirements are retained.
+
+data/projects.json: Persistent storage for project records.
+
+data/updates.json: Persistent storage for project updates.
+
+SPEC.md: Project requirements and technical specifications.
+
+SPRINT1.md: Project recap, workflow demo instructions, and AI usage reflection.
+
+requirements.txt: Python dependencies, including Flask.
+
+The application must run locally through Flask at http://localhost:5000.
+
+The Flask application must serve HTML from the templates directory and static assets from the static directory.
+
+All backend functionality must reside in Python files. Frontend functionality must remain separated into HTML, CSS, and JavaScript.
 
 ### 3.2 HTML Structure and Interface
 
@@ -193,7 +209,11 @@ The intended logical data model contains two entities.
 
 Each update must be associated with its corresponding project using `project_id`.
 
-For Sprint 1, this model may be represented with JavaScript objects and arrays in the frontend. A persistent database and backend are not required unless separately specified by the course.
+The backend must implement this data model using Python lists of dictionaries. Projects and Updates must be maintained as separate collections, with each update referencing its associated project through project_id.
+
+The application must persist these collections using local JSON files. Python data structures will serve as the primary in-memory representation while the application is running.
+
+The frontend must retrieve and modify project information through Flask API endpoints rather than maintaining its own independent source of project records.
 
 ### 3.6 AI Capability and Responsible Use
 
@@ -204,6 +224,164 @@ For Sprint 1, this model may be represented with JavaScript objects and arrays i
 5. Do not claim that the AI has performed work, accessed repositories, or verified accomplishments that were not provided to it.
 6. Do not expose API keys or other secrets in frontend JavaScript. If an actual API key is required, a secure integration must be addressed separately; the frontend prototype should use a clearly labeled mock response if no secure API integration is available.
 7. The developer must understand and be able to explain every line of code, including DOM queries, event listeners, callbacks, validation, and state changes.
+
+## 3.7 Backend Architecture and Python Requirements
+
+The application must use Python and Flask to provide a modular backend that manages project records, update history, input validation, and communication with the frontend.
+
+1. Application Entry Point
+
+Create an app.py file as the main application entry point.
+
+Use Flask to initialize and configure the application.
+
+Run the application locally at http://localhost:5000.
+
+Organize backend functionality into clearly defined routes and helper functions.
+
+Keep backend logic separate from HTML, CSS, and JavaScript.
+
+The Flask application must serve the frontend and handle API requests.
+
+2. Python Data Structures
+
+Represent projects and updates using native Python data structures.
+
+Store project records in a list of dictionaries.
+
+Store update records in a separate list of dictionaries.
+
+Each project and update must have a unique identifier.
+
+Associate updates with projects through project_id.
+
+Use appropriate Python data types:
+
+Integers for identifiers.
+
+Strings for names, descriptions, links, and update content.
+
+Booleans for true/false flags.
+
+Appropriate date/time representations for timestamps.
+
+Use .get() with sensible defaults or guarded dictionary lookups when accessing potentially missing values.
+
+Strip unnecessary whitespace from user-provided strings before storing them.
+
+Avoid treating every input as an unvalidated string.
+
+3. Data Management and Persistence
+
+Maintain project and update records in Python data structures while the application is running.
+
+Implement helper functions to create, retrieve, modify, and delete records.
+
+Generate unique identifiers when creating projects and updates.
+
+Ensure updates remain associated with the correct project.
+
+Persist records between application restarts using local JSON files.
+
+Load saved records when the Flask application starts.
+
+Save changes to the JSON files whenever records are created, modified, or deleted.
+
+Do not introduce a database system or additional database entities unless explicitly required.
+
+4. Flask Routes and HTTP Methods
+
+Implement REST-style API endpoints to manage projects and updates.
+
+Projects:
+
+GET /api/projects - Return all projects.
+
+GET /api/projects/<project_id> - Return a specific project.
+
+POST /api/projects - Validate and create a new project.
+
+PUT /api/projects/<project_id> - Update an existing project.
+
+DELETE /api/projects/<project_id> - Delete a project if removal is supported.
+
+Updates:
+
+GET /api/projects/<project_id>/updates - Return updates associated with a project.
+
+POST /api/projects/<project_id>/updates - Create an update associated with a project.
+
+AI:
+
+POST /api/projects/<project_id>/updates/polish - Accept a rough update and return a polished version using the existing single-turn LLM capability.
+
+All endpoints must return structured JSON responses.
+
+5. Defensive Input Validation
+
+Validate incoming request bodies before processing them.
+
+Check that required fields exist and contain valid values.
+
+Reject missing, empty, malformed, or incorrectly typed data.
+
+Strip leading and trailing whitespace from strings.
+
+Validate project identifiers before accessing records.
+
+Confirm that referenced projects exist before creating or retrieving their updates.
+
+Return an informative error message when validation fails.
+
+Do not allow malformed requests to modify stored records.
+
+6. HTTP Status Codes
+
+Every API route must explicitly return an appropriate HTTP status code.
+
+200 OK: Successful retrieval or modification of an existing resource.
+
+201 Created: Successful creation of a new resource, including its generated ID and created record.
+
+204 No Content: Successful deletion without a response body.
+
+400 Bad Request: Missing, invalid, or malformed client input.
+
+404 Not Found: Requested project or update does not exist.
+
+500 Internal Server Error: Unexpected server-side error.
+
+Error responses must contain a descriptive JSON message. Unexpected errors must be handled gracefully without exposing stack traces, internal paths, or sensitive information to the client.
+
+7. Frontend and Backend Communication
+
+Use JavaScript fetch() to communicate with Flask API endpoints.
+
+Send and receive JSON data using appropriate HTTP methods.
+
+Replace frontend-only project storage with backend-managed records.
+
+Dynamically update the interface using the data returned by the backend.
+
+Display informative messages when API requests succeed or fail.
+
+Handle loading states and unsuccessful requests without breaking the interface.
+
+Ensure the existing project creation, update polishing, review, and history workflow remains functional.
+
+8. Code Quality and Organization
+
+Keep route handlers focused on HTTP requests and responses.
+
+Move reusable data operations and validation into helper functions.
+
+Avoid unnecessary duplication of validation and storage logic.
+
+Use descriptive variable and function names.
+
+Include comments where they clarify non-obvious logic.
+
+The developer must understand and be able to explain all implemented backend functionality.
 
 ## 4. Deliverables
 
@@ -271,3 +449,53 @@ Write one paragraph documenting:
 - [ ] The avatar uses `./assets/avatar.jpg` if included.
 - [ ] The primary navigation links to the projects section and GitHub profile.
 - [ ] The primary button has visually distinct hover, focus-visible, active, and disabled
+
+## 5.3 Backend and API Functionality
+
+Flask application starts successfully at localhost:5000.
+
+app.py serves the frontend through Flask.
+
+Projects are represented using Python lists of dictionaries.
+
+Updates are represented using Python lists of dictionaries.
+
+Every project and update has a unique identifier.
+
+Updates reference their associated projects through project_id.
+
+Project and update records persist through JSON files.
+
+Existing records load when the application starts.
+
+Project creation works through a POST request.
+
+Project retrieval works through GET requests.
+
+Existing project modification works through PUT requests.
+
+Deletion works through DELETE requests if implemented.
+
+Project updates can be created and retrieved through API endpoints.
+
+Required fields and data types are validated on the backend.
+
+Invalid requests return 400 Bad Request.
+
+Missing resources return 404 Not Found.
+
+Successful creation returns 201 Created and the newly generated ID.
+
+Successful retrieval and modification return 200 OK.
+
+Successful deletion returns 204 No Content when supported.
+
+Unexpected server errors return 500 Internal Server Error.
+
+API responses use structured JSON.
+
+Error responses do not expose internal stack traces.
+
+JavaScript communicates with Flask through fetch().
+
+Existing frontend functionality remains operational.
