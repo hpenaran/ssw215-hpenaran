@@ -71,6 +71,7 @@ The welcome section is secondary to the project tracker. The project management 
    - The main current project
    - Recent project updates
    - Upcoming plans
+   - A rolling 12-month activity calendar that shows every day of each month, drops its oldest month, and adds each new month automatically.
 
 3. Allows the owner to enter rough project updates and request a polished version using a single-turn LLM API call.
 

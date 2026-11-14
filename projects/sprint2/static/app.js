@@ -368,10 +368,10 @@ async function loadActivity() {
   const activity = await response.json();
   const counts = new Map(activity.map((entry) => [entry.date, entry.count]));
   const today = new Date();
-  const todayUtc = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()));
+  const firstMonth = new Date(Date.UTC(today.getFullYear(), today.getMonth() - 11, 1));
   activityCalendar.replaceChildren();
+  activityDetail.textContent = 'Select a day to see its update count.';
   const weekdays = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
-  const firstMonth = new Date(Date.UTC(todayUtc.getUTCFullYear(), todayUtc.getUTCMonth() - 11, 1));
 
   for (let monthOffset = 0; monthOffset < 12; monthOffset += 1) {
     const monthDate = new Date(Date.UTC(
@@ -417,13 +417,6 @@ async function loadActivity() {
         dayNumber
       ));
       const dateString = date.toISOString().slice(0, 10);
-      if (date > todayUtc) {
-        const futureDay = document.createElement('span');
-        futureDay.className = 'activity-empty-day';
-        grid.appendChild(futureDay);
-        continue;
-      }
-
       const count = counts.get(dateString) || 0;
       const cell = document.createElement('button');
       cell.type = 'button';
@@ -439,6 +432,22 @@ async function loadActivity() {
     month.append(title, grid);
     activityCalendar.appendChild(month);
   }
+}
+
+function scheduleActivityRefresh() {
+  const now = new Date();
+  const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+  const delay = nextMonth.getTime() - now.getTime() + 100;
+
+  window.setTimeout(async () => {
+    try {
+      await loadActivity();
+    } catch (error) {
+      reportError(error, activityDetail, 'Unable to refresh project activity.');
+    } finally {
+      scheduleActivityRefresh();
+    }
+  }, delay);
 }
 
 function resizeImage(file, maxWidth = 1600, maxHeight = 1200) {
@@ -742,3 +751,4 @@ loadProjects().catch((error) => {
 loadActivity().catch((error) => {
   reportError(error, activityDetail, 'Unable to load project activity.');
 });
+scheduleActivityRefresh();
