@@ -116,9 +116,7 @@ static/app.js: Vanilla JavaScript, event listeners, frontend validation, and API
 
 static/assets/avatar.jpg: Relative-path avatar image, if the welcome-page requirements are retained.
 
-data/projects.json: Persistent storage for project records.
-
-data/updates.json: Persistent storage for project updates.
+instance/portfolio.db: SQLite database for persistent project records and updates.
 
 SPEC.md: Project requirements and technical specifications.
 
@@ -209,9 +207,9 @@ The intended logical data model contains two entities.
 
 Each update must be associated with its corresponding project using `project_id`.
 
-The backend must implement this data model using Python lists of dictionaries. Projects and Updates must be maintained as separate collections, with each update referencing its associated project through project_id.
+The backend must implement this data model in SQLite. Projects and Updates must be maintained as separate tables, with each update referencing its associated project through project_id and a foreign-key constraint.
 
-The application must persist these collections using local JSON files. Python data structures will serve as the primary in-memory representation while the application is running.
+The application must create and initialize instance/portfolio.db when it starts, load existing records from it, and save all project and update changes there. Existing data/projects.json and data/updates.json files may be imported once when initializing an empty database; after that, SQLite is the sole source of persistent records.
 
 The frontend must retrieve and modify project information through Flask API endpoints rather than maintaining its own independent source of project records.
 
@@ -247,9 +245,7 @@ The Flask application must serve the frontend and handle API requests.
 
 Represent projects and updates using native Python data structures.
 
-Store project records in a list of dictionaries.
-
-Store update records in a separate list of dictionaries.
+Represent project and update records as dictionaries when processing them in Python.
 
 Each project and update must have a unique identifier.
 
@@ -281,13 +277,13 @@ Generate unique identifiers when creating projects and updates.
 
 Ensure updates remain associated with the correct project.
 
-Persist records between application restarts using local JSON files.
+Persist records between application restarts using instance/portfolio.db.
 
 Load saved records when the Flask application starts.
 
-Save changes to the JSON files whenever records are created, modified, or deleted.
+Save changes to the database whenever records are created, modified, or deleted.
 
-Do not introduce a database system or additional database entities unless explicitly required.
+Use SQLite's projects and updates tables, with project_id as a foreign key from updates to projects. Store project technologies and screenshot paths in related tables.
 
 4. Flask Routes and HTTP Methods
 
@@ -456,15 +452,13 @@ Flask application starts successfully at localhost:5000.
 
 app.py serves the frontend through Flask.
 
-Projects are represented using Python lists of dictionaries.
-
-Updates are represented using Python lists of dictionaries.
+Projects and updates are stored in SQLite and converted to Python dictionaries for API responses.
 
 Every project and update has a unique identifier.
 
 Updates reference their associated projects through project_id.
 
-Project and update records persist through JSON files.
+Project and update records persist through instance/portfolio.db.
 
 Existing records load when the application starts.
 

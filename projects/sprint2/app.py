@@ -1,4 +1,6 @@
 import json
+import sqlite3
+from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
 from uuid import uuid4
@@ -11,6 +13,8 @@ app = Flask(__name__)
 
 BASE_DIR = Path(__file__).resolve().parent
 DATA_DIR = BASE_DIR / "data"
+INSTANCE_DIR = BASE_DIR / "instance"
+DATABASE_PATH = INSTANCE_DIR / "portfolio.db"
 PROJECTS_PATH = DATA_DIR / "projects.json"
 UPDATES_PATH = DATA_DIR / "updates.json"
 UPLOADS_DIR = BASE_DIR / "static" / "uploads"
@@ -18,33 +22,24 @@ MAX_IMAGE_SIZE = 8 * 1024 * 1024
 MAX_SCREENSHOTS = 8
 app.config["MAX_CONTENT_LENGTH"] = 80 * 1024 * 1024
 
-DATA_DIR.mkdir(parents=True, exist_ok=True)
+INSTANCE_DIR.mkdir(parents=True, exist_ok=True)
 UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
+
+
+@contextmanager
+def connect_db():
+    connection = sqlite3.connect(DATABASE_PATH)
+    connection.row_factory = sqlite3.Row
+    connection.execute("PRAGMA foreign_keys = ON")
+    try:
+        with connection:
+            yield connection
+    finally:
+        connection.close()
 
 
 def now_iso() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-
-
-def read_json(path: Path, default):
-    if not path.exists() or path.stat().st_size == 0:
-        return default
-
-    try:
-        with path.open("r", encoding="utf-8") as file_obj:
-            loaded = json.load(file_obj)
-    except (OSError, json.JSONDecodeError):
-        return default
-
-    if isinstance(loaded, type(default)):
-        return loaded
-    return default
-
-
-def save_json(path: Path, payload):
-    with path.open("w", encoding="utf-8") as file_obj:
-        json.dump(payload, file_obj, indent=2)
-        file_obj.write("\n")
 
 
 SEED_PROJECTS = [
@@ -87,9 +82,6 @@ SEED_UPDATES = [
     },
 ]
 
-PROJECTS = read_json(PROJECTS_PATH, [])
-UPDATES = read_json(UPDATES_PATH, [])
-
 def add_project_defaults(project):
     defaults = {
         "main_image": "",
@@ -128,47 +120,238 @@ def add_project_defaults(project):
     return changed
 
 
-PROJECTS_MIGRATED = False
-for project in PROJECTS:
-    PROJECTS_MIGRATED = add_project_defaults(project) or PROJECTS_MIGRATED
-featured_seen = False
-for project in PROJECTS:
-    if project["featured"]:
-        if featured_seen:
-            project["featured"] = False
-            PROJECTS_MIGRATED = True
-        featured_seen = True
-if PROJECTS_MIGRATED:
-    save_json(PROJECTS_PATH, PROJECTS)
+def read_legacy_json(path: Path, default):
+    if not path.exists():
+        return default
+    with path.open("r", encoding="utf-8") as file_obj:
+        loaded = json.load(file_obj)
+    if not isinstance(loaded, type(default)):
+        raise ValueError(f"Legacy data in {path.name} must be a {type(default).__name__}.")
+    return loaded
 
-if not PROJECTS:
-    PROJECTS.extend(SEED_PROJECTS)
-    for project in PROJECTS:
-        add_project_defaults(project)
-    save_json(PROJECTS_PATH, PROJECTS)
 
-if not UPDATES:
-    UPDATES.extend(SEED_UPDATES)
-    save_json(UPDATES_PATH, UPDATES)
+def insert_project(connection, project):
+    add_project_defaults(project)
+    connection.execute(
+        """
+        INSERT INTO projects (
+            id, name, description, github_link, status, future_plans,
+            created_at, updated_at, main_image, category, featured
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        (
+            project["id"], project.get("name", ""), project.get("description", ""),
+            project.get("github_link", ""), project.get("status", "Planning"),
+            project.get("future_plans", ""), project.get("created_at", now_iso()),
+            project.get("updated_at", now_iso()), project["main_image"],
+            project["category"], int(project["featured"]),
+        ),
+    )
+    connection.executemany(
+        "INSERT INTO project_screenshots (project_id, path) VALUES (?, ?)",
+        [(project["id"], path) for path in project["screenshots"]],
+    )
+    connection.executemany(
+        "INSERT INTO project_technologies (project_id, technology) VALUES (?, ?)",
+        [(project["id"], technology) for technology in project["technologies"]],
+    )
+
+
+def initialize_database():
+    with connect_db() as connection:
+        connection.executescript(
+            """
+            CREATE TABLE IF NOT EXISTS projects (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                description TEXT NOT NULL,
+                github_link TEXT NOT NULL DEFAULT '',
+                status TEXT NOT NULL,
+                future_plans TEXT NOT NULL,
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL,
+                main_image TEXT NOT NULL DEFAULT '',
+                category TEXT NOT NULL DEFAULT 'Personal Project',
+                featured INTEGER NOT NULL DEFAULT 0
+            );
+            CREATE TABLE IF NOT EXISTS project_screenshots (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                project_id INTEGER NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+                path TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS project_technologies (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                project_id INTEGER NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+                technology TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS updates (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                project_id INTEGER NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+                rough_update TEXT NOT NULL,
+                polished_update TEXT NOT NULL,
+                created_at TEXT NOT NULL
+            );
+            """
+        )
+        if connection.execute("SELECT COUNT(*) FROM projects").fetchone()[0]:
+            return
+
+        projects = read_legacy_json(PROJECTS_PATH, [])
+        if not projects:
+            projects = [dict(project) for project in SEED_PROJECTS]
+        for project in projects:
+            insert_project(connection, project)
+
+        updates = read_legacy_json(UPDATES_PATH, [])
+        if not updates and not PROJECTS_PATH.exists():
+            updates = [dict(update) for update in SEED_UPDATES]
+        valid_project_ids = {
+            row["id"] for row in connection.execute("SELECT id FROM projects")
+        }
+        connection.executemany(
+            """
+            INSERT INTO updates (id, project_id, rough_update, polished_update, created_at)
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            [
+                (
+                    update["id"], update["project_id"], update.get("rough_update", ""),
+                    update.get("polished_update", ""), update.get("created_at", now_iso()),
+                )
+                for update in updates
+                if update.get("project_id") in valid_project_ids
+            ],
+        )
+
+
+initialize_database()
 
 
 def project_by_id(project_id):
-    for project in PROJECTS:
-        if project["id"] == project_id:
-            return project
-    return None
+    with connect_db() as connection:
+        row = connection.execute(
+            "SELECT * FROM projects WHERE id = ?", (project_id,)
+        ).fetchone()
+        if row is None:
+            return None
+        project = dict(row)
+        project["featured"] = bool(project["featured"])
+        project["screenshots"] = [
+            item["path"] for item in connection.execute(
+                "SELECT path FROM project_screenshots WHERE project_id = ? ORDER BY id",
+                (project_id,),
+            )
+        ]
+        project["technologies"] = [
+            item["technology"] for item in connection.execute(
+                "SELECT technology FROM project_technologies WHERE project_id = ? ORDER BY id",
+                (project_id,),
+            )
+        ]
+        return project
+
+
+def all_projects():
+    with connect_db() as connection:
+        project_ids = [
+            row["id"] for row in connection.execute("SELECT id FROM projects ORDER BY id")
+        ]
+    return [project_by_id(project_id) for project_id in project_ids]
 
 
 def updates_for_project(project_id):
-    return [update for update in UPDATES if update["project_id"] == project_id]
+    with connect_db() as connection:
+        rows = connection.execute(
+            "SELECT * FROM updates WHERE project_id = ? ORDER BY created_at DESC, id DESC",
+            (project_id,),
+        )
+        return [dict(row) for row in rows]
 
 
-def next_project_id():
-    return max((project["id"] for project in PROJECTS), default=0) + 1
+def persist_project(project, creating=False):
+    with connect_db() as connection:
+        if project["featured"]:
+            connection.execute("UPDATE projects SET featured = 0")
+
+        if creating:
+            cursor = connection.execute(
+                """
+                INSERT INTO projects (
+                    name, description, github_link, status, future_plans,
+                    created_at, updated_at, main_image, category, featured
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    project["name"], project["description"], project["github_link"],
+                    project["status"], project["future_plans"], project["created_at"],
+                    project["updated_at"], project["main_image"], project["category"],
+                    int(project["featured"]),
+                ),
+            )
+            project["id"] = cursor.lastrowid
+        else:
+            connection.execute(
+                """
+                UPDATE projects SET
+                    name = ?, description = ?, github_link = ?, status = ?,
+                    future_plans = ?, updated_at = ?, main_image = ?, category = ?,
+                    featured = ?
+                WHERE id = ?
+                """,
+                (
+                    project["name"], project["description"], project["github_link"],
+                    project["status"], project["future_plans"], project["updated_at"],
+                    project["main_image"], project["category"], int(project["featured"]),
+                    project["id"],
+                ),
+            )
+            connection.execute(
+                "DELETE FROM project_screenshots WHERE project_id = ?", (project["id"],)
+            )
+            connection.execute(
+                "DELETE FROM project_technologies WHERE project_id = ?", (project["id"],)
+            )
+
+        connection.executemany(
+            "INSERT INTO project_screenshots (project_id, path) VALUES (?, ?)",
+            [(project["id"], path) for path in project["screenshots"]],
+        )
+        connection.executemany(
+            "INSERT INTO project_technologies (project_id, technology) VALUES (?, ?)",
+            [(project["id"], technology) for technology in project["technologies"]],
+        )
+
+    return project
 
 
-def next_update_id():
-    return max((update["id"] for update in UPDATES), default=0) + 1
+def update_by_id(update_id):
+    with connect_db() as connection:
+        row = connection.execute(
+            "SELECT * FROM updates WHERE id = ?", (update_id,)
+        ).fetchone()
+        return dict(row) if row is not None else None
+
+
+def create_update_record(project_id, rough_update, polished_update):
+    update = {
+        "project_id": project_id,
+        "rough_update": rough_update,
+        "polished_update": polished_update,
+        "created_at": now_iso(),
+    }
+    with connect_db() as connection:
+        cursor = connection.execute(
+            """
+            INSERT INTO updates (project_id, rough_update, polished_update, created_at)
+            VALUES (?, ?, ?, ?)
+            """,
+            (
+                update["project_id"], update["rough_update"],
+                update["polished_update"], update["created_at"],
+            ),
+        )
+        update["id"] = cursor.lastrowid
+    return update
 
 
 def clean_required_string(value, field_name):
@@ -407,13 +590,6 @@ def validate_update_payload(payload):
     }
 
 
-def update_by_id(update_id):
-    for update in UPDATES:
-        if update.get("id") == update_id:
-            return update
-    return None
-
-
 def polish_update_text(rough_update):
     cleaned = " ".join(rough_update.split())
     if not cleaned:
@@ -435,7 +611,7 @@ def index():
 
 @app.get("/api/projects")
 def get_projects():
-    return jsonify(PROJECTS), 200
+    return jsonify(all_projects()), 200
 
 
 @app.get("/api/projects/<int:project_id>")
@@ -455,7 +631,6 @@ def create_project():
         return jsonify({"error": str(exc)}), 400
 
     project = {
-        "id": next_project_id(),
         "name": validated["name"],
         "description": validated["description"],
         "github_link": validated["github_link"],
@@ -474,19 +649,9 @@ def create_project():
     except ValueError as exc:
         return jsonify({"error": str(exc)}), 400
 
-    featured_before = {
-        current["id"]: current.get("featured", False) for current in PROJECTS
-    }
-    if project["featured"]:
-        for current in PROJECTS:
-            current["featured"] = False
-    PROJECTS.append(project)
     try:
-        save_json(PROJECTS_PATH, PROJECTS)
-    except OSError:
-        PROJECTS.pop()
-        for current in PROJECTS:
-            current["featured"] = featured_before[current["id"]]
+        persist_project(project, creating=True)
+    except (OSError, sqlite3.Error):
         for path in saved_files:
             remove_uploaded_file(path)
         raise
@@ -521,19 +686,9 @@ def update_project(project_id):
         project.update(old_values)
         return jsonify({"error": str(exc)}), 400
 
-    featured_before = {
-        current["id"]: current.get("featured", False) for current in PROJECTS
-    }
-    if project["featured"]:
-        for current in PROJECTS:
-            if current["id"] != project_id:
-                current["featured"] = False
     try:
-        save_json(PROJECTS_PATH, PROJECTS)
-    except OSError:
-        project.update(old_values)
-        for current in PROJECTS:
-            current["featured"] = featured_before[current["id"]]
+        persist_project(project)
+    except (OSError, sqlite3.Error):
         for path in saved_files:
             remove_uploaded_file(path)
         raise
@@ -548,16 +703,10 @@ def delete_project(project_id):
     if project is None:
         return jsonify({"error": "Project not found."}), 404
 
-    remaining_projects = [entry for entry in PROJECTS if entry["id"] != project_id]
     removed_files = [project.get("main_image", "")]
     removed_files.extend(project.get("screenshots", []))
-    PROJECTS.clear()
-    PROJECTS.extend(remaining_projects)
-
-    global UPDATES
-    UPDATES = [entry for entry in UPDATES if entry["project_id"] != project_id]
-    save_json(PROJECTS_PATH, PROJECTS)
-    save_json(UPDATES_PATH, UPDATES)
+    with connect_db() as connection:
+        connection.execute("DELETE FROM projects WHERE id = ?", (project_id,))
     for path in removed_files:
         remove_uploaded_file(path)
     return "", 204
@@ -567,24 +716,21 @@ def delete_project(project_id):
 def get_updates(project_id):
     if project_by_id(project_id) is None:
         return jsonify({"error": "Project not found."}), 404
-    updates = sorted(
-        updates_for_project(project_id),
-        key=lambda entry: entry.get("created_at", ""),
-        reverse=True,
-    )
-    return jsonify(updates), 200
+    return jsonify(updates_for_project(project_id)), 200
 
 
 @app.get("/api/activity")
 def get_activity():
     counts = {}
-    for update in UPDATES:
-        created_at = update.get("created_at", "")
-        try:
-            day = datetime.fromisoformat(created_at.replace("Z", "+00:00")).date().isoformat()
-        except (TypeError, ValueError):
-            continue
-        counts[day] = counts.get(day, 0) + 1
+    with connect_db() as connection:
+        updates = connection.execute("SELECT created_at FROM updates")
+        for update in updates:
+            created_at = update["created_at"]
+            try:
+                day = datetime.fromisoformat(created_at.replace("Z", "+00:00")).date().isoformat()
+            except (TypeError, ValueError):
+                continue
+            counts[day] = counts.get(day, 0) + 1
     return jsonify(
         [{"date": day, "count": count} for day, count in sorted(counts.items())]
     ), 200
@@ -601,15 +747,11 @@ def create_update(project_id):
     except ValueError as exc:
         return jsonify({"error": str(exc)}), 400
 
-    update = {
-        "id": next_update_id(),
-        "project_id": project_id,
-        "rough_update": validated["rough_update"],
-        "polished_update": validated["polished_update"] or polish_update_text(validated["rough_update"]),
-        "created_at": now_iso(),
-    }
-    UPDATES.append(update)
-    save_json(UPDATES_PATH, UPDATES)
+    update = create_update_record(
+        project_id,
+        validated["rough_update"],
+        validated["polished_update"] or polish_update_text(validated["rough_update"]),
+    )
     return jsonify(update), 201
 
 
@@ -635,15 +777,13 @@ def edit_update(project_id, update_id):
     except ValueError as exc:
         return jsonify({"error": str(exc)}), 400
 
-    previous_values = dict(update)
     update["rough_update"] = rough_update
     update["polished_update"] = polished_update
-    try:
-        save_json(UPDATES_PATH, UPDATES)
-    except OSError:
-        update.clear()
-        update.update(previous_values)
-        raise
+    with connect_db() as connection:
+        connection.execute(
+            "UPDATE updates SET rough_update = ?, polished_update = ? WHERE id = ?",
+            (rough_update, polished_update, update_id),
+        )
     return jsonify(update), 200
 
 
@@ -656,13 +796,8 @@ def delete_update(project_id, update_id):
     if update is None or update.get("project_id") != project_id:
         return jsonify({"error": "Update not found."}), 404
 
-    update_index = UPDATES.index(update)
-    UPDATES.pop(update_index)
-    try:
-        save_json(UPDATES_PATH, UPDATES)
-    except OSError:
-        UPDATES.insert(update_index, update)
-        raise
+    with connect_db() as connection:
+        connection.execute("DELETE FROM updates WHERE id = ?", (update_id,))
     return "", 204
 
 
